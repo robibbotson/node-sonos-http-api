@@ -1,5 +1,6 @@
 'use strict';
 
+var auth = require('http-auth');
 var http = require('http');
 var SonosDiscovery = require('sonos-discovery');
 var SonosHttpAPI = require('./lib/sonos-http-api.js');
@@ -39,7 +40,12 @@ var fileServer = new nodeStatic.Server(webroot);
 var discovery = new SonosDiscovery(settings);
 var api = new SonosHttpAPI(discovery, settings);
 
-var server = http.createServer(function (req, res) {
+var basic = auth.basic({
+    realm: "Authenticated area.",
+    file: __dirname + "/data/users.htpasswd" 
+});
+
+var server = http.createServer(basic, function (req, res) {
   req.addListener('end', function () {
     fileServer.serve(req, res, function (err) {
       // If error, route it.
